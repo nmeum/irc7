@@ -1,0 +1,132 @@
+.TH IRC 1
+.SH NAME
+ircsrv, irc \- internet relay chat client and ui
+.SH SYNOPSIS
+.B ircsrv
+[
+.I -s serv
+]
+[
+.I -f file
+]
+.I nickname
+.I [tcp!]irc.server.org
+.br
+.B irc
+[
+.I -e
+]
+[
+.I -c charset
+]
+[
+.I -t victim
+]
+[
+.I -b lines
+]
+[
+.I -r file
+]
+[
+.I -p password
+]
+[
+.I /srv/serv
+[
+.I /tmp/file
+]]
+.SH DESCRIPTION
+.I Ircsrv
+makes a connection to an irc server and reconnects if the connection
+gets broken. It posts a service to /srv and creates (if necessary) an
+append mode log file to /tmp. Default file and service name is a 
+concatenation of 4 first letters of username and the string 
+.I irc
+.
+.PP
+.I Irc
+is a client program that makes use of the service provided by
+.I ircsrv
+and provides a user interface for sending and receiving
+messages.
+.PP
+The command language understood by
+.I irc
+is as follows
+.EX
+/h  this message
+/H	this message
+/m	privmsg #chan/nick message
+/M	mode #chan +nt
+/j	join [ #chan ]
+/p	part [ #chan ]
+/q	send parameters raw to the server
+/l	list [ #chan ]
+/L	names [ #chan ]
+/n	nick newnick
+/N	notice #chan/nick message
+/t	set [ victim ]
+/T	topic [ #chan [ newtopic ]]
+/W	whois nick
+/w	who nick (a shorter whois)
+.EE
+.PP
+The
+.I -e
+flag enables SSL, the
+.I -c
+flag sets character set conversion using
+.IR tcs (1),
+the
+.I -r
+flag will cause irc to replay the conversation from the raw file supplied as argument without user interaction,
+the
+.I -b
+flag causes the client to display the last n lines of the default target or 
+conversations if no target is set. Without any arguments
+.I -b
+prints the conversation from the very beginning.
+The
+.I -t
+flag sets the default target to which the messages are
+sent by default if a line written to
+.I irc
+does not begin with /. Irc also prints messages to/from
+the target exclusively if one is set. Irc prints only private messages if the target is set to "MSGS", useful for being notified when a message is sent to your nick without having to monitor all the status information.
+.SH EXAMPLES
+To start up ircsrv on a remote cpu server
+.EX
+cpu -c ircsrv glenda irc.freenode.net
+.EE
+.PP
+To use ircsrv started earlier on a cpu server
+.EX
+import $cpu /srv
+import $cpu /tmp
+irc
+.EE
+.PP
+To start/see/continue a conversation with a specific target (can be #chan or nick)
+.EX
+irc -t \'#plan9\'
+irc -t f2f
+.EE
+.PP
+To run irc within acme start irc inside 
+"win -e":
+.EX
+win -e
+irc -t f2f
+.EE
+.SH SOURCE
+/sys/src/cmd/ircsrv.c
+.br
+/sys/src/cmd/irc.c
+.SH SEE ALSO
+.IR tcs (1),
+.IR faces (1),
+.IR nedmail (1)
+.SH BUGS
+Probably.  Missing functionality includes opening new windows when a
+message from a new target arrives.
