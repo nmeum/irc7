@@ -205,7 +205,7 @@ reconnect(void)
 		username, mode, unused, realname);
 	fprint(ircfd, "NICK %s\r\n", nickname);
 	for(i = 0; i < tchans; i++)
-		fprint(ircfd, "JOIN %s\r\n", channels[i])
+		fprint(ircfd, "JOIN %s\r\n", channels[i]);
 }
 
 
@@ -266,10 +266,10 @@ joinhandler(char *buf)
 	if(strlen(buf) > 4){
 		crap = strdup(buf);
 		crap[strlen(crap)-2] = '\0';
-		if(tokenize(crap, toks, 4) >= 2){
+		if(tokenize(crap, toks, 4) >= 2)
 			if(strncmp(crap, "JOIN", 4) == 0)
 				if(tchans < 256){
-					chans[tchans] = strdup(crap[1]);
+					channels[tchans] = strdup(toks[1]);
 					tchans++;
 				}
 		free(crap);
