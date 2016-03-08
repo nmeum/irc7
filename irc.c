@@ -762,8 +762,6 @@ srvparse(char *line, char **pre, char **cmd, char *par[], int npar)
 void	// this garbage is bullshit
 getwidth(void)
 {
-	int mintab;
-if(0){
 	Font *font;
 	int n, fd, mintab;
 	char buf[128], *f[10], *p;
@@ -801,7 +799,7 @@ if(0){
 		return;
 
 	buf[n] = 0;
-}
+
 	/* window stucture:
 		4 bit left edge
 		1 bit gap
