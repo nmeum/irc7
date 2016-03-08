@@ -96,7 +96,7 @@ setwintitle(char *chan)
 		close(fd);
 	}
 	if ((fd = open("/dev/acme/ctl", OWRITE)) >= 0) {
-		fprint(fd, "name -IRC/%s\n", chan);
+		fprint(fd, "name -IRC/%s/guide\n", chan);
 		close(fd);
 		inacme = 1;
 	}
@@ -759,9 +759,11 @@ srvparse(char *line, char **pre, char **cmd, char *par[], int npar)
 	return st == Ok ? 0 : 1;
 }
 
-void
+void	// this garbage is bullshit
 getwidth(void)
 {
+	int mintab;
+if(0){
 	Font *font;
 	int n, fd, mintab;
 	char buf[128], *f[10], *p;
@@ -799,7 +801,7 @@ getwidth(void)
 		return;
 
 	buf[n] = 0;
-	
+}
 	/* window stucture:
 		4 bit left edge
 		1 bit gap
@@ -808,7 +810,8 @@ getwidth(void)
 		text
 		4 bit right edge
 	*/
-	linewidth = atoi(buf+3*12) - atoi(buf+1*12) - (4+1+12+4+4);
+//	linewidth = atoi(buf+3*12) - atoi(buf+1*12) - (4+1+12+4+4);
+	linewidth = 20000;  // update this when screens are more than 20,000 pixels wide
 	mintab = stringwidth(font, "0");
 	linewidth = linewidth/mintab;
 }
