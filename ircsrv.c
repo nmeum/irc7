@@ -92,8 +92,9 @@ main(int argc, char *argv[])
 
 	username = getuser();
 
-	if(strlen(username) > 4)
-		username[4] = '\0';
+// this has been and is always stupid.
+//	if(strlen(username) > 4)
+//		username[4] = '\0';
 
 
 	if(post == nil)

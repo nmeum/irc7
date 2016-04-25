@@ -1,0 +1,4 @@
+#!/bin/rc
+for(objtype in arm amd64 386){
+	mk install
+}

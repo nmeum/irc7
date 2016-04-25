@@ -91,14 +91,15 @@ setwintitle(char *chan)
 {
 	int fd;
 
-	if ((fd = open("/dev/label", OWRITE)) >= 0) {
-		fprint(fd, "%s", chan);
-		close(fd);
-	}
+	// if /dev/acme doesn't exist you're probably in a normal window
+	// otherwise you can't set the title in a windowless window
 	if ((fd = open("/dev/acme/ctl", OWRITE)) >= 0) {
 		fprint(fd, "name -IRC/%s/guide\n", chan);
 		close(fd);
 		inacme = 1;
+	} else if ((fd = open("/dev/label", OWRITE)) >= 0) {
+		fprint(fd, "%s", chan);
+		close(fd);
 	}
 }
 
@@ -311,10 +312,13 @@ main(int argc, char *argv[])
 {
 	char *charset = nil;
 	char buf[32], buf2[32], *out = nil, *in = nil;
+	char *user;
+	int olduser = 0;
 	char *arg;
 	int sb = 10;	/* how many lines are we displaying initially */
 	int uipid;
 
+	user = getuser();
 	ARGBEGIN {
 	case 't':
 		victim = strdup(EARGF(usage()));
@@ -332,6 +336,9 @@ main(int argc, char *argv[])
 	case 'r':
 		replay = 1;
 		sb = 0;
+		break;
+	case 'o':
+		olduser = 1;
 		break;
 	default:
 		usage();
@@ -354,19 +361,13 @@ main(int argc, char *argv[])
 		usage();
 	}
 
-	if(out == nil) {
-		out = getuser();
-		if(strlen(out) > 4)
-			out[4] = 0;
-		snprint(buf, sizeof buf, "/srv/%sirc", out);
-		out = buf;
-	}
-	if(in == nil) {
-		in = getuser();
-		if(strlen(in) > 4)
-			in[4] = 0;
-		snprint(buf2, sizeof buf2, "/tmp/%sirc", in);
-		in = buf2;
+	if(out == nil && in == nil){
+		if(olduser == 1 && strlen(user) > 4)
+			user[4] = '\0';
+		snprint(buf, sizeof buf, "/srv/%sirc", user);
+		snprint(buf2, sizeof buf, "/tmp/%sirc", user);
+		out = strdup(buf);
+		in = strdup(buf2);
 	}
 
 	if(!replay && (server_out = open(out, OWRITE)) < 0)
