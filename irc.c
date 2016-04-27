@@ -36,6 +36,7 @@ int server_out;
 int scr;
 char *victim;
 char *nick;
+char *unick;
 int inacme;		/* running in acme? */
 int	linewidth; 	/* terminal width in # of characters */
 
@@ -81,7 +82,7 @@ int usrparse(char *ln, char *cmd, char *par[], int npar);
 void
 usage(void)
 {
-	char usage[] = "usage: irc [-c charset] [-t victim] [-b lines] [-r file] [/srv/irc [/tmp/irc]]\n";
+	char usage[] = "usage: irc [-c charset] [-t victim] [-b lines] [-n nick] [-r file] [/srv/irc] [/tmp/irc]\n";
 	write(1, usage, sizeof(usage)-1);
 	exits("usage");
 }
@@ -180,6 +181,7 @@ usrin(void)
 					fprint(server_out, "NICK %s\r\n", par[0]);
 					free(nick);
 					nick = strdup(par[0]);
+					unick = strdup(par[0]);
 				} else {
 					fprint(scr, "%s", help);
 				}
@@ -318,6 +320,7 @@ main(int argc, char *argv[])
 	int sb = 10;	/* how many lines are we displaying initially */
 	int uipid;
 
+	unick = nil;
 	user = getuser();
 	ARGBEGIN {
 	case 't':
@@ -339,6 +342,9 @@ main(int argc, char *argv[])
 		break;
 	case 'o':
 		olduser = 1;
+		break;
+	case 'n':
+		unick = strdup(EARGF(usage()));
 		break;
 	default:
 		usage();
@@ -369,6 +375,8 @@ main(int argc, char *argv[])
 		out = strdup(buf);
 		in = strdup(buf2);
 	}
+	if(unick == nil)
+		unick = strdup(user);
 
 	if(!replay && (server_out = open(out, OWRITE)) < 0)
 			sysfatal("open write: %s %r", out);
@@ -505,6 +513,7 @@ pmsg(int, char *pre, char *, char *par[])
 	char buf[8192];
 	//char *c, *tc;
 	char *c;
+	int privmsg = 0;
 
 /*
  *	if sent to victim, or comes from victim to non-channel, print.
@@ -515,34 +524,26 @@ pmsg(int, char *pre, char *, char *par[])
 		if((cistrncmp(victim, "MSGS", 4) == 0) && *par[0] != '#') {
 			/* catch-all for messages, fall through */
 		
-		} else if(cistrcmp(par[0], victim))
-			if(!pre || cistrcmp(pre, victim) || *par[0] == '#')
+		} else if(cistrcmp(par[0], victim)){
+			if(*par[0] != '#'){
+				if(cistrcmp(par[0], unick) == 0 &&
+					cistrcmp(par[0], victim) != 0)
+					privmsg = 1;
+			} else if(!pre || cistrcmp(pre, victim) || *par[0] == '#')
 				return 0;
+		}
 	}
 
 	if(!pre)
 		sprint(buf, "(%s) ⇐ %s\n", par[0], par[1]);
+	else if(privmsg == 1)
+		sprint(buf, "(privmsg) %s → %s\n", pre, par[1]);
 	else if(*par[0] != '#')
 		sprint(buf, "(%s) ⇒ %s\n", pre, par[1]);
 	else
 		sprint(buf, "(%s) %s → %s\n", par[0], pre, par[1]);
 	
 	c = buf;
-//again:
-//	if(strlen(c) >= linewidth) {
-//		for(tc = c + linewidth; tc > c; tc--) {
-//			switch(*tc) {
-//			case ' ':
-//				*tc = '\0';
-//				n += fprint(scr, "%s\n", c);
-//				c = tc+1;
-//				goto again;
-//				break;
-//			default:
-//				break;
-//			}
-//		}
-//	}
 	n += fprint(scr, "%s", c);
 	return n;
 }
@@ -574,7 +575,7 @@ int
 generic(int, char *pre, char *cmd, char *par[])
 {
 	int i = 0, r;
-	char *nick = prenick(pre);
+	char *n = prenick(pre);
 
 /*
  *	don't print crud on screens with victim set
@@ -582,8 +583,8 @@ generic(int, char *pre, char *cmd, char *par[])
 	if(victim)
 		return 0;
 
-	if (nick != nil) 
-		r = fprint(scr, "%s (%s)\t", cmd, nick);
+	if (n != nil) 
+		r = fprint(scr, "%s (%s)\t", cmd, n);
 	else
 		r = fprint(scr, "%s (%s)\t", cmd, par[i++]);
 
@@ -599,14 +600,14 @@ int
 misc(int, char *pre, char *cmd, char *par[])
 {
 	int i = 0, r;
-	char *nick = prenick(pre);
+	char *n = prenick(pre);
 
 	if(cistrcmp(cmd,"QUIT"))
 		if(victim && par[0] && cistrcmp(par[0], victim))
 			return 0;	
 
-	if (nick != nil) 
-		r = fprint(scr, "%s (%s)\t", cmd, nick);
+	if (n != nil) 
+		r = fprint(scr, "%s (%s)\t", cmd, n);
 	else
 		r = fprint(scr, "%s %s\t", cmd, par[i++]);
 
@@ -622,13 +623,13 @@ int
 numeric(int, char *pre, char *cmd, char *par[])
 {
 	int i = 0, r;
-	char *nick = prenick(pre);
+	char *n = prenick(pre);
 
 	if(victim && par[1] && cistrcmp(par[1], victim))
 		return 0;
 
-	if (nick != nil) 
-		r = fprint(scr, "%s (%s)\t", cmd, nick);
+	if (n != nil) 
+		r = fprint(scr, "%s (%s)\t", cmd, n);
 	else
 		r = fprint(scr, "%s (%s)\t", cmd, par[i++]);
 
