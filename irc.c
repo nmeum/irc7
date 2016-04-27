@@ -602,6 +602,8 @@ misc(int, char *pre, char *cmd, char *par[])
 	int i = 0, r;
 	char *n = prenick(pre);
 
+	if(cistrcmp(victim, "privmsg") == 0)
+		return 0;
 	if(cistrcmp(cmd,"QUIT"))
 		if(victim && par[0] && cistrcmp(par[0], victim))
 			return 0;	
@@ -624,6 +626,9 @@ numeric(int, char *pre, char *cmd, char *par[])
 {
 	int i = 0, r;
 	char *n = prenick(pre);
+
+	if(cistrcmp(victim, "privmsg") == 0)
+		return 0;
 
 	if(victim && par[1] && cistrcmp(par[1], victim))
 		return 0;
