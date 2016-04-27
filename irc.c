@@ -525,7 +525,7 @@ pmsg(int, char *pre, char *, char *par[])
 			/* catch-all for messages, fall through */
 		
 		} else if(cistrcmp(par[0], victim)){
-			if(*par[0] != '#'){
+			if(*par[0] != '#' && cistrcmp(victim, "privmsg") == 0){
 				if(cistrcmp(par[0], unick) == 0 &&
 					cistrcmp(par[0], victim) != 0)
 					privmsg = 1;
