@@ -7,6 +7,7 @@ char *post;
 char *file;
 int ircfd = -1;	// the irc server
 int logfd;
+int debugfd = -1;
 int enctls = 0; // ssl/tls
 QLock lck;
 char *channels[256];
@@ -14,6 +15,7 @@ int tchans;
 
 char *server;
 char *passwd;
+char *nspasswd;
 char *nickname;
 char *realname;
 char *username;
@@ -29,7 +31,7 @@ void joinhandler(char*);
 void
 usage(void)
 {
-	fprint(2, "usage: %s [-e] [-s service] [-f file] [-p pass] nickname [net!]ircserver[!port]\n", argv0);
+	fprint(2, "usage: %s [-e] [-s service] [-f file] [-p pass] [-P nickserv password] [-n nickname] [-D debug log] [net!]ircserver[!port]\n", argv0);
 	exits("usage");
 }
 
@@ -54,6 +56,7 @@ void
 main(int argc, char *argv[])
 {
 	char *tmp;
+	char *debugfn;
 	int p[2], fd;
 
 	ARGBEGIN{
@@ -69,6 +72,18 @@ main(int argc, char *argv[])
 	case 'e':
 		enctls = 1;
 		break;
+	case 'P':
+		/* do whats stated below. Don't want your passwords to get out there! */
+		tmp = EARGF(usage());
+		nspasswd = smprint("%s", tmp);
+		if(nspasswd)
+			memset(tmp, '\0', strlen(tmp));
+		else
+			nspasswd = tmp;
+		break;
+	case 'n':
+		nickname = strdup(EARGF(usage()));
+		break;
 	case 'p':
 		passwd = EARGF(usage());	
 		/* try to obfuscate the password so ps -a won't see it */
@@ -79,23 +94,29 @@ main(int argc, char *argv[])
 		else
 			passwd = tmp;
 		break;
+	case 'D':
+		debugfn = EARGF(usage());
+		debugfd = create(debugfn, OWRITE, 0600 | DMAPPEND);
+		if(debugfd < 0)
+			sysfatal("create(%s): %r", debugfn);
+		break;
 	default:
 		usage();
 	}ARGEND;
 
-	if(argc < 2)
+	if(argc < 1)
 		usage();
 
-
-	nickname = argv[0];
-	server = argv[1];
-
+	server = argv[0];
 	username = getuser();
+	if(nickname == nil)
+		nickname = strdup(username);
 
-// this has been and is always stupid.
-//	if(strlen(username) > 4)
-//		username[4] = '\0';
-
+	if(debugfd == -1){
+		debugfd = open("/dev/null", OWRITE);
+		if(debugfd < 0)
+			sysfatal("open(/dev/null): %r");
+	}
 
 	if(post == nil)
 		post = smprint("/srv/%sirc", username);
@@ -200,13 +221,19 @@ reconnect(void)
         	ircfd = tlsClient(ircfd, conn);
 		if (ircfd < 0) { sysfatal ("tls: %r"); }
 	}
+	qlock(&lck);
 	if(passwd && strcmp(passwd, ""))
 		fprint(ircfd, "PASS %s\r\n", passwd);
 	fprint(ircfd, "USER %s %s %s :%s\r\n",
 		username, mode, unused, realname);
 	fprint(ircfd, "NICK %s\r\n", nickname);
+	if(nspasswd && strcmp(nspasswd, "")){
+		fprint(ircfd, "PRIVMSG nickserv :identify %s\r\n", nspasswd);
+		fprint(logfd, "PRIVMSG nicksrv :identify PASSWORD\r\n");
+	}
 	for(i = 0; i < tchans; i++)
 		fprint(ircfd, "JOIN %s\r\n", channels[i]);
+	qunlock(&lck);
 }
 
 
@@ -270,8 +297,11 @@ joinhandler(char *buf)
 		if(tokenize(crap, toks, 4) >= 2)
 			if(strncmp(crap, "JOIN", 4) == 0)
 				if(tchans < 256){
+					fprint(debugfd, "adding channel %s to join list\n", toks[1]);
 					channels[tchans] = strdup(toks[1]);
 					tchans++;
+				} else {
+					fprint(debugfd, "join list full\n");
 				}
 		free(crap);
 	}
