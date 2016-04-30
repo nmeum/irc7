@@ -628,8 +628,9 @@ numeric(int, char *pre, char *cmd, char *par[])
 	int i = 0, r;
 	char *n = prenick(pre);
 
-	if(cistrcmp(victim, "privmsg") == 0)
-		return 0;
+	if(victim != nil)
+		if(cistrcmp(victim, "privmsg") == 0)
+			return 0;
 
 	if(victim && par[1] && cistrcmp(par[1], victim))
 		return 0;
