@@ -1,0 +1,10 @@
+syntax: glob
+*.8
+*.6
+*.5
+8.irc
+8.ircsrv
+5.irc
+5.ircsrv
+6.irc
+6.ircsrv
