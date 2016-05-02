@@ -4,18 +4,29 @@ ircsrv, irc \- internet relay chat client and ui
 .SH SYNOPSIS
 .B ircsrv
 [
-.I -s serv
+.I -e
+]
+[
+.I -s service
 ]
 [
 .I -f file
 ]
-.I nickname
-.I [tcp!]irc.server.org
+[
+.I -p pass
+]
+[
+.I -P nickserv pass
+]
+[
+.I -n nickname
+]
+[
+.I -D debug log
+]
+.I [tcp!]irc.server.org[!port]
 .br
 .B irc
-[
-.I -e
-]
 [
 .I -c charset
 ]
@@ -26,10 +37,10 @@ ircsrv, irc \- internet relay chat client and ui
 .I -b lines
 ]
 [
-.I -r file
+.I -n nick
 ]
 [
-.I -p password
+.I -r file
 ]
 [
 .I /srv/serv
@@ -41,9 +52,11 @@ ircsrv, irc \- internet relay chat client and ui
 makes a connection to an irc server and reconnects if the connection
 gets broken. It posts a service to /srv and creates (if necessary) an
 append mode log file to /tmp. Default file and service name is a 
-concatenation of 4 first letters of username and the string 
-.I irc
-.
+concatenation the username and the string 
+.I irc.
+The default nickname is your username unless flag
+.I -n
+is used.
 .PP
 .I Irc
 is a client program that makes use of the service provided by
@@ -93,7 +106,13 @@ flag sets the default target to which the messages are
 sent by default if a line written to
 .I irc
 does not begin with /. Irc also prints messages to/from
-the target exclusively if one is set. Irc prints only private messages if the target is set to "MSGS", useful for being notified when a message is sent to your nick without having to monitor all the status information.
+the target exclusively if one is set. Irc prints only private messages if the target is set to "MSGS", useful for being notified when a message is sent to your nick without having to monitor all the status information. Flags
+.I -p
+and
+.I -P
+are for normal passwords and nickserv passwords (a la freenode). Flag
+.I -n
+sets a nickname to something other than your username.
 .SH EXAMPLES
 To start up ircsrv on a remote cpu server
 .EX
@@ -128,5 +147,4 @@ irc -t f2f
 .IR faces (1),
 .IR nedmail (1)
 .SH BUGS
-Probably.  Missing functionality includes opening new windows when a
-message from a new target arrives.
+Yes.
