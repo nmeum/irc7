@@ -4,7 +4,8 @@ if(~ $#objtypes 0){
 	objtypes=(amd64 arm 386)
 }
 
-echo 'building irc7 for '^$"objtypes
+echo 'installing irc7 for '^$"objtypes
 for(objtype in $objtypes){
-	mk
+	mk install
 }
+mk clean

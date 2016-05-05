@@ -82,7 +82,7 @@ int usrparse(char *ln, char *cmd, char *par[], int npar);
 void
 usage(void)
 {
-	char usage[] = "usage: irc [-c charset] [-t victim] [-b lines] [-n nick] [-r file] [/srv/irc] [/tmp/irc]\n";
+	char usage[] = "usage: irc [-S] [-c charset] [-t victim] [-b lines] [-n nick] [-r file] [/srv/irc] [/tmp/irc]\n";
 	write(1, usage, sizeof(usage)-1);
 	exits("usage");
 }
@@ -319,6 +319,8 @@ main(int argc, char *argv[])
 	char *arg;
 	int sb = 10;	/* how many lines are we displaying initially */
 	int uipid;
+	int scroll = 1;
+	int wctlfd;
 
 	unick = nil;
 	user = getuser();
@@ -345,6 +347,9 @@ main(int argc, char *argv[])
 		break;
 	case 'n':
 		unick = strdup(EARGF(usage()));
+		break;
+	case 'S':
+		scroll = 0;
 		break;
 	default:
 		usage();
@@ -377,6 +382,15 @@ main(int argc, char *argv[])
 	}
 	if(unick == nil)
 		unick = strdup(user);
+
+	if(scroll == 1){
+		if((wctlfd = open("/dev/wctl", OWRITE)) < 0)
+			print("irc: could not open /dev/wctl: %r\n");
+		else {
+			fprint(wctlfd, "scroll\n");
+			close(wctlfd);
+		}
+	}
 
 	if(!replay && (server_out = open(out, OWRITE)) < 0)
 			sysfatal("open write: %s %r", out);
