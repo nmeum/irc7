@@ -28,6 +28,9 @@ ircsrv, irc \- internet relay chat client and ui
 .br
 .B irc
 [
+.I -S
+]
+[
 .I -c charset
 ]
 [
@@ -99,8 +102,11 @@ the
 flag causes the client to display the last n lines of the default target or 
 conversations if no target is set. Without any arguments
 .I -b
-prints the conversation from the very beginning.
-The
+prints the conversation from the very beginning. The flag
+.I -S
+prevents
+.I irc
+from enabling scrolling in the window by default. This should be used when run in acme to prevent an error message. The
 .I -t
 flag sets the default target to which the messages are
 sent by default if a line written to
