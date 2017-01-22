@@ -205,6 +205,7 @@ reconnect(void)
 		sysfatal("dial: %r");
 	if(enctls > 0) {
 		memset(&conn, 0, sizeof(conn));
+		conn.serverName = server;
 		if(ccert != nil) {
 			conn.cert = readcert(ccert, &conn.certlen);
 			if(conn.cert == nil)
