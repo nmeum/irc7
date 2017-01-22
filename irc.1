@@ -13,10 +13,13 @@ ircsrv, irc \- internet relay chat client and ui
 .I -s service
 ]
 [
+.I -p port
+]
+[
 .I -f file
 ]
 [
-.I -p pass
+.I -P pass
 ]
 [
 .I -n nickname
@@ -24,7 +27,7 @@ ircsrv, irc \- internet relay chat client and ui
 [
 .I -r realname
 ]
-.I [tcp!]irc.server.org[!port]
+.I server
 .br
 .B irc
 [
@@ -58,7 +61,11 @@ append mode log file in /tmp.
 .PP
 The
 .I -e
-flag enables TLS, the
+flag enables TLS. If you want to enable TLS you probably want to change
+the default TCP port as well, this can be done using the
+.I -p
+flag. If this flag is not specified the default port (6667) is being
+used. The
 .I -c
 flag allows you to pass a certificate used to authenticate yourself
 with NickServ using CertFP. The certificate is presented to the server

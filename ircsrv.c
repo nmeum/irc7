@@ -5,9 +5,10 @@
 
 char *post;
 char *file;
-int ircfd = -1;	// the irc server
+int ircfd = -1; // the irc server
 int logfd;
 int enctls = 0; // ssl/tls
+int port = 6667;
 QLock lck;
 char *channels[256];
 int tchans;
@@ -30,7 +31,7 @@ void joinhandler(char*);
 void
 usage(void)
 {
-	fprint(2, "usage: %s [-e] [-c cert] [-s service] [-f file] [-p pass] [-P nickserv password] [-n nickname] [-r realname ] [net!]ircserver[!port]\n", argv0);
+	fprint(2, "usage: %s [-e] [-c cert] [-p port] [-s service] [-f file] [-P pass] [-n nickname] [-r realname ] server\n", argv0);
 	exits("usage");
 }
 
@@ -60,6 +61,9 @@ main(int argc, char *argv[])
 	case 'c':
 		ccert = EARGF(usage());
 		break;
+	case 'p':
+		port = atoi(EARGF(usage()));
+		break;
 	case 'f':
 		file = EARGF(usage());
 		break;
@@ -75,7 +79,7 @@ main(int argc, char *argv[])
 	case 'n':
 		nickname = strdup(EARGF(usage()));
 		break;
-	case 'p':
+	case 'P':
 		passwd = EARGF(usage());	
 		/* try to obfuscate the password so ps -a won't see it */
 		tmp = passwd;
@@ -189,12 +193,15 @@ reregister(void)
 void
 reconnect(void)
 {
+	char addr[128];
 	TLSconn conn;
 	int i;
 
+	snprint(addr, sizeof(addr), "tcp!%s!%d", server, port);
+
 	if(ircfd >= 0)
 		close(ircfd);
-	if((ircfd = dial(netmkaddr(server, "tcp", "6667"), nil, nil, nil)) < 0)
+	if((ircfd = dial(addr, nil, nil, nil)) < 0)
 		sysfatal("dial: %r");
 	if(enctls > 0) {
 		memset(&conn, 0, sizeof(conn));
