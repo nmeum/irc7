@@ -22,6 +22,9 @@ ircsrv, irc \- internet relay chat client and ui
 .I -n nickname
 ]
 [
+.I -r realname
+]
+[
 .I -D debug log
 ]
 .I [tcp!]irc.server.org[!port]
@@ -54,12 +57,34 @@ ircsrv, irc \- internet relay chat client and ui
 .I Ircsrv
 makes a connection to an irc server and reconnects if the connection
 gets broken. It posts a service to /srv and creates (if necessary) an
-append mode log file to /tmp. Default file and service name is a 
-concatenation the username and the string 
-.I irc.
-The default nickname is your username unless flag
+append mode log file in /tmp.
+.PP
+The
+.I -e
+flag enables SSL, the
+.I -s
+flag changes the service name in /srv. By default the name is
+a concatenation of the username and the string
+.I irc
+\&. The same naming rules apply to the append mode log file created
+in /tmp, however the
+.I -f
+flag allows you to change the location of this file. If the
+.I -P
+flag is specified the given password is used to authenticate the
+user with NickServ after a connection to the IRC server has been
+successfully established. The
+.I -p
+flag on the other hand is used to authenticate with the server
+itself, if it requires password authentication. The
 .I -n
-is used.
+flag is used to set the nickname, the default nickname is your
+username. Besides the
+.I -r
+flag allows you to change your realname. The
+.I -D
+flag can be used for debugging, it writes debugging information
+to the specified file.
 .PP
 .I Irc
 is a client program that makes use of the service provided by
@@ -89,8 +114,6 @@ is as follows
 .EE
 .PP
 The
-.I -e
-flag enables SSL, the
 .I -c
 flag sets character set conversion using
 .IR tcs (1),

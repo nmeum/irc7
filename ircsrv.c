@@ -31,10 +31,9 @@ void joinhandler(char*);
 void
 usage(void)
 {
-	fprint(2, "usage: %s [-e] [-s service] [-f file] [-p pass] [-P nickserv password] [-n nickname] [-D debug log] [net!]ircserver[!port]\n", argv0);
+	fprint(2, "usage: %s [-e] [-s service] [-f file] [-p pass] [-P nickserv password] [-n nickname] [-r realname ] [-D debug log] [net!]ircserver[!port]\n", argv0);
 	exits("usage");
 }
-
 
 void
 killall(void)

@@ -37,10 +37,10 @@ int scr;
 char *victim;
 char *nick;
 char *unick;
-int inacme;		/* running in acme? */
-int	linewidth; 	/* terminal width in # of characters */
+int inacme;	/* running in acme? */
+int linewidth;	/* terminal width in # of characters */
 
-int replay;		/* just print the log ma'am */
+int replay;	/* just print the log ma'am */
 
 void setwintitle(char *chan);
 
