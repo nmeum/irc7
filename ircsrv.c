@@ -7,7 +7,6 @@ char *post;
 char *file;
 int ircfd = -1;	// the irc server
 int logfd;
-int debugfd = -1;
 int enctls = 0; // ssl/tls
 QLock lck;
 char *channels[256];
@@ -31,7 +30,7 @@ void joinhandler(char*);
 void
 usage(void)
 {
-	fprint(2, "usage: %s [-e] [-s service] [-f file] [-p pass] [-P nickserv password] [-n nickname] [-r realname ] [-D debug log] [net!]ircserver[!port]\n", argv0);
+	fprint(2, "usage: %s [-e] [-s service] [-f file] [-p pass] [-P nickserv password] [-n nickname] [-r realname ] [net!]ircserver[!port]\n", argv0);
 	exits("usage");
 }
 
@@ -55,7 +54,6 @@ void
 main(int argc, char *argv[])
 {
 	char *tmp;
-	char *debugfn;
 	int p[2], fd;
 
 	ARGBEGIN{
@@ -93,12 +91,6 @@ main(int argc, char *argv[])
 		else
 			passwd = tmp;
 		break;
-	case 'D':
-		debugfn = EARGF(usage());
-		debugfd = create(debugfn, OWRITE, 0600 | DMAPPEND);
-		if(debugfd < 0)
-			sysfatal("create(%s): %r", debugfn);
-		break;
 	default:
 		usage();
 	}ARGEND;
@@ -110,12 +102,6 @@ main(int argc, char *argv[])
 	username = getuser();
 	if(nickname == nil)
 		nickname = strdup(username);
-
-	if(debugfd == -1){
-		debugfd = open("/dev/null", OWRITE);
-		if(debugfd < 0)
-			sysfatal("open(/dev/null): %r");
-	}
 
 	if(post == nil)
 		post = smprint("/srv/%sirc", username);
@@ -296,11 +282,8 @@ joinhandler(char *buf)
 		if(tokenize(crap, toks, 4) >= 2)
 			if(strncmp(crap, "JOIN", 4) == 0)
 				if(tchans < 256){
-					fprint(debugfd, "adding channel %s to join list\n", toks[1]);
 					channels[tchans] = strdup(toks[1]);
 					tchans++;
-				} else {
-					fprint(debugfd, "join list full\n");
 				}
 		free(crap);
 	}
