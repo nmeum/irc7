@@ -19,9 +19,6 @@ ircsrv, irc \- internet relay chat client and ui
 .I -p pass
 ]
 [
-.I -P nickserv pass
-]
-[
 .I -n nickname
 ]
 [
@@ -75,12 +72,8 @@ in /tmp, however the
 .I -f
 flag allows you to change the location of this file. If the
 .I -P
-flag is specified the given password is used to authenticate the
-user with NickServ after a connection to the IRC server has been
-successfully established. The
-.I -p
-flag on the other hand is used to authenticate with the server
-itself, if it requires password authentication. The
+flag is specified the given password is used to authenticate
+with the server. The
 .I -n
 flag is used to set the nickname, the default nickname is your
 username. Besides the
@@ -130,19 +123,16 @@ prints the conversation from the very beginning. The flag
 .I -S
 prevents
 .I irc
-from enabling scrolling in the window by default. This should be used when run in acme to prevent an error message. The
+from enabling scrolling in the window by default. This should be used when run
+in acme to prevent an error message. The
 .I -t
 flag sets the default target to which the messages are
 sent by default if a line written to
 .I irc
-does not begin with /. Irc also prints messages to/from
-the target exclusively if one is set. Irc prints only private messages if the target is set to "MSGS", useful for being notified when a message is sent to your nick without having to monitor all the status information. Flags
-.I -p
-and
-.I -P
-are for normal passwords and nickserv passwords (a la freenode). Flag
-.I -n
-sets a nickname to something other than your username.
+does not begin with /. Irc also prints messages to/from the target exclusively
+if one is set. Irc prints only private messages if the target is set to "MSGS",
+useful for being notified when a message is sent to your nick without
+having to monitor all the status information.
 .SH EXAMPLES
 To start up ircsrv on a remote cpu server
 .EX

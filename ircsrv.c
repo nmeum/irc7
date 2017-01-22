@@ -15,7 +15,6 @@ int tchans;
 char *ccert;
 char *server;
 char *passwd;
-char *nspasswd;
 char *nickname;
 char *realname;
 char *username;
@@ -72,15 +71,6 @@ main(int argc, char *argv[])
 		break;
 	case 'e':
 		enctls = 1;
-		break;
-	case 'P':
-		/* do whats stated below. Don't want your passwords to get out there! */
-		tmp = EARGF(usage());
-		nspasswd = smprint("%s", tmp);
-		if(nspasswd)
-			memset(tmp, '\0', strlen(tmp));
-		else
-			nspasswd = tmp;
 		break;
 	case 'n':
 		nickname = strdup(EARGF(usage()));
@@ -226,10 +216,6 @@ reconnect(void)
 	fprint(ircfd, "USER %s %s %s :%s\r\n",
 		username, mode, unused, realname);
 	fprint(ircfd, "NICK %s\r\n", nickname);
-	if(nspasswd && strcmp(nspasswd, "")){
-		fprint(ircfd, "PRIVMSG nickserv :identify %s\r\n", nspasswd);
-		fprint(logfd, "PRIVMSG nicksrv :identify PASSWORD\r\n");
-	}
 	for(i = 0; i < tchans; i++)
 		fprint(ircfd, "JOIN %s\r\n", channels[i]);
 	qunlock(&lck);
