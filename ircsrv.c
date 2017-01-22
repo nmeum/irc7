@@ -12,6 +12,7 @@ QLock lck;
 char *channels[256];
 int tchans;
 
+char *ccert;
 char *server;
 char *passwd;
 char *nspasswd;
@@ -30,7 +31,7 @@ void joinhandler(char*);
 void
 usage(void)
 {
-	fprint(2, "usage: %s [-e] [-s service] [-f file] [-p pass] [-P nickserv password] [-n nickname] [-r realname ] [net!]ircserver[!port]\n", argv0);
+	fprint(2, "usage: %s [-e] [-c cert] [-s service] [-f file] [-p pass] [-P nickserv password] [-n nickname] [-r realname ] [net!]ircserver[!port]\n", argv0);
 	exits("usage");
 }
 
@@ -57,6 +58,9 @@ main(int argc, char *argv[])
 	int p[2], fd;
 
 	ARGBEGIN{
+	case 'c':
+		ccert = EARGF(usage());
+		break;
 	case 'f':
 		file = EARGF(usage());
 		break;
@@ -195,16 +199,26 @@ reregister(void)
 void
 reconnect(void)
 {
-	TLSconn *conn;
+	TLSconn conn;
 	int i;
+
 	if(ircfd >= 0)
 		close(ircfd);
 	if((ircfd = dial(netmkaddr(server, "tcp", "6667"), nil, nil, nil)) < 0)
-		sysfatal("dial %r");
+		sysfatal("dial: %r");
 	if(enctls > 0) {
-		conn = (TLSconn *)mallocz(sizeof *conn, 1);
-        	ircfd = tlsClient(ircfd, conn);
-		if (ircfd < 0) { sysfatal ("tls: %r"); }
+		memset(&conn, 0, sizeof(conn));
+		if(ccert != nil) {
+			conn.cert = readcert(ccert, &conn.certlen);
+			if(conn.cert == nil)
+				sysfatal("readcert: %r");
+		}
+
+		ircfd = tlsClient(ircfd, &conn);
+		if(ircfd < 0)
+			sysfatal("tls: %r");
+		free(conn.cert);
+		free(conn.sessionID);
 	}
 	qlock(&lck);
 	if(passwd && strcmp(passwd, ""))

@@ -7,6 +7,9 @@ ircsrv, irc \- internet relay chat client and ui
 .I -e
 ]
 [
+.I -c cert
+]
+[
 .I -s service
 ]
 [
@@ -58,7 +61,11 @@ append mode log file in /tmp.
 .PP
 The
 .I -e
-flag enables SSL, the
+flag enables TLS, the
+.I -c
+flag allows you to pass a certificate used to authenticate yourself
+with NickServ using CertFP. The certificate is presented to the server
+upon request. The
 .I -s
 flag changes the service name in /srv. By default the name is
 a concatenation of the username and the string
