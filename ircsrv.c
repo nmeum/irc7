@@ -12,6 +12,7 @@ int port = 6667;
 QLock lck;
 char *channels[256];
 int tchans;
+Thumbprint *thumb;
 
 char *ccert;
 char *server;
@@ -31,7 +32,7 @@ void joinhandler(char*);
 void
 usage(void)
 {
-	fprint(2, "usage: %s [-e] [-c cert] [-p port] [-s service] [-f file] [-P pass] [-n nickname] [-r realname ] server\n", argv0);
+	fprint(2, "usage: %s [-e] [-t thumb] [-c cert] [-p port] [-s service] [-f file] [-P pass] [-n nickname] [-r realname ] server\n", argv0);
 	exits("usage");
 }
 
@@ -54,12 +55,15 @@ die(void *, char *)
 void
 main(int argc, char *argv[])
 {
-	char *tmp;
+	char *tmp, *tfp = nil;
 	int p[2], fd;
 
 	ARGBEGIN{
 	case 'c':
 		ccert = EARGF(usage());
+		break;
+	case 't':
+		tfp = EARGF(usage());
 		break;
 	case 'p':
 		port = atoi(EARGF(usage()));
@@ -100,6 +104,12 @@ main(int argc, char *argv[])
 	username = getuser();
 	if(nickname == nil)
 		nickname = strdup(username);
+
+	if(tfp != nil) {
+		thumb = initThumbprints(tfp, nil);
+		if(thumb == nil)
+			sysfatal("initThumbprints: %r");
+	}
 
 	if(post == nil)
 		post = smprint("/srv/%sirc", username);
@@ -194,6 +204,7 @@ void
 reconnect(void)
 {
 	char addr[128];
+	uchar hash[SHA1dlen];
 	TLSconn conn;
 	int i;
 
@@ -215,6 +226,15 @@ reconnect(void)
 		ircfd = tlsClient(ircfd, &conn);
 		if(ircfd < 0)
 			sysfatal("tls: %r");
+
+		if(thumb) {
+			if(conn.cert == nil || conn.certlen <= 0)
+				sysfatal("server did not provide TLS certificate");
+			sha1(conn.cert, conn.certlen, hash, nil);
+			if(!okThumbprint(hash, thumb))
+				sysfatal("server certificate not recognized");
+		}
+
 		free(conn.cert);
 		free(conn.sessionID);
 	}
